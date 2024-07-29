@@ -7,35 +7,42 @@
 
 AUE4_RPGGameModeBase::AUE4_RPGGameModeBase()
 {
-	MaxPlayerCharacterCount = 3;
 	PlayerCharacterStartIndex = 0;
+	StartSpawnTransform.SetLocation(FVector(0, 0, 130));
 }
 
 void AUE4_RPGGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
+	SpawnAndPossessCharacters();
+}
 
-	StartSpawnTransform.SetLocation(FVector(0, 0, 88));
+void AUE4_RPGGameModeBase::SpawnAndPossessCharacters()
+{
+	ACPlayerController* PlayerController = Cast<ACPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (!PlayerController) return;
 
-	for (int32 i = 0; i < MaxPlayerCharacterCount; i++)
+	for (int32 i = 0; i < PlayerController->GetMaxPlayerCharacterCount(); i++)
 	{
-		if (CharacterClasses[i])
+		if (PlayerController->GetCharacterClasses()[i])
 		{
-			TSubclassOf<APawn> CharacterClass = CharacterClasses[i];
+			TSubclassOf<APawn> CharacterClass = PlayerController->GetCharacterClasses()[i];
 			ACPlayerCharacter* PlayerCharacter = GetWorld()->SpawnActorDeferred<ACPlayerCharacter>(CharacterClass, StartSpawnTransform);
 			PlayerCharacter->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			PlayerCharacter->GetMesh()->SetVisibility(false);
 			PlayerCharacter->FinishSpawning(StartSpawnTransform);
-			PlayerCharacters.Add(PlayerCharacter);
-			CLog::Print("SPawnd");
+			PlayerController->AddControlledPlayerCharacter(PlayerCharacter);
+			CLog::Print("Spawned");
 		}
 	}
 
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 
-	if (PlayerCharacters[PlayerCharacterStartIndex] && PlayerController)
+	if (PlayerController->GetPlayerCharacters()[PlayerCharacterStartIndex])
 	{
-		PlayerController->Possess(PlayerCharacters[PlayerCharacterStartIndex]);
+		PlayerController->Possess(PlayerController->GetPlayerCharacters()[PlayerCharacterStartIndex]);
+		Cast<ACPlayerCharacter>(PlayerController->GetPlayerCharacters()[PlayerCharacterStartIndex])->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		Cast<ACPlayerCharacter>(PlayerController->GetPlayerCharacters()[PlayerCharacterStartIndex])->GetMesh()->SetVisibility(true);
+		PlayerController->SetViewTarget(PlayerController->GetPlayerCharacters()[PlayerCharacterStartIndex]);
 		CLog::Print("Possess");
 	}
 }

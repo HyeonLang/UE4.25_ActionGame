@@ -15,22 +15,12 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-public:
-	FORCEINLINE int32 GetMaxPlayerCharacterCount() { return MaxPlayerCharacterCount; }
-	FORCEINLINE TArray<TSubclassOf<APawn>> GetCharacterClasses() { return CharacterClasses; }
-	FORCEINLINE	TArray<APawn*> GetPlayerCharacters() { return PlayerCharacters; }
+private:
+	void SpawnAndPossessCharacters();
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Character")
-	int32 MaxPlayerCharacterCount;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Character")
 	int32 PlayerCharacterStartIndex;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Character")
-	TArray<TSubclassOf<APawn>> CharacterClasses;
-
-	TArray<APawn*> PlayerCharacters;
 
 	FTransform StartSpawnTransform;
 };
