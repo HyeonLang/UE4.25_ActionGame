@@ -109,7 +109,7 @@ void ACPlayerController::PossessCharacter(ACPlayerCharacter* InNewCharacter)
 	Possess(InNewCharacter);
 	InNewCharacter->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	InNewCharacter->GetMesh()->SetVisibility(true);
-	SetViewTarget(InNewCharacter);
+	//SetViewTarget(this);
 	PlayerCharacter = InNewCharacter;
 }
 
