@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 #include "../Global.h"
 #include "../Player/CPlayerController.h"
@@ -16,20 +17,12 @@ ACPlayerCharacter::ACPlayerCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	CHelpers::CreateSceneComponent(this, &SpringArmComp, "SpringArmComp", GetMesh());
-	CHelpers::CreateSceneComponent(this, &CameraComp, "CameraComp", SpringArmComp);
-
-	//-> SpringArmComp
-	SpringArmComp->SetRelativeLocation(FVector(0, 0, 140));
-	SpringArmComp->SetRelativeRotation(FRotator(0, 90, 0));
-	SpringArmComp->TargetArmLength = 200.0f;
-	SpringArmComp->bUsePawnControlRotation = true;
-	SpringArmComp->bEnableCameraLag = true;
-
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 
-	//GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_,)
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->RotationRate = FRotator(0, 720, 0);
 	
 }
 
@@ -68,5 +61,19 @@ void ACPlayerCharacter::OnMoveRight(float Axis)
 	FVector direction = FQuat(ControlRotation).GetRightVector();
 
 	AddMovementInput(direction, Axis);
+}
+
+void ACPlayerCharacter::OnTurn(float Axis)
+{
+	float Rate = 45.f * Axis * GetWorld()->GetDeltaSeconds();
+
+	AddControllerYawInput(Rate);
+}
+
+void ACPlayerCharacter::OnLookUp(float Axis)
+{
+	float Rate = 45.f * Axis * GetWorld()->GetDeltaSeconds();
+
+	AddControllerPitchInput(Rate);
 }
 

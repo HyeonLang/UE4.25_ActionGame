@@ -6,7 +6,10 @@
 #include "GameFramework/PlayerController.h"
 #include "CPlayerController.generated.h"
 
+class ACharacter;
 class ACPlayerCharacter;
+class UCameraComponent;
+class USpringArmComponent;
 
 UCLASS()
 class UE4_RPG_API ACPlayerController : public APlayerController
@@ -21,13 +24,18 @@ protected:
 
 public:
 	FORCEINLINE int32 GetMaxPlayerCharacterCount() { return MaxPlayerCharacterCount; }
-	FORCEINLINE const TArray<TSubclassOf<APawn>> GetCharacterClasses() { return CharacterClasses; }
-	FORCEINLINE TArray<APawn*>& GetPlayerCharacters() { return PlayerCharacters; }
+	FORCEINLINE const TArray<TSubclassOf<ACPlayerCharacter>> GetCharacterClasses() { return CharacterClasses; }
+	FORCEINLINE TArray<ACPlayerCharacter*>& GetPlayerCharacters() { return PlayerCharacters; }
 	FORCEINLINE const int32 GetPlayerCharacterCurrentIndex() { return PlayerCharacterCurrentIndex; }
+	FORCEINLINE const UCameraComponent* GetCameraComp() { return CameraComp; }
 
 	void SetPlayerCharacterCurrentIndex(int32 InIndex);
 
-	void AddControlledPlayerCharacter(ACharacter* InNewCharacter);
+	void AddControlledPlayerCharacter(ACPlayerCharacter* InNewCharacter);
+
+	void SpawnPlayerCharacter(FTransform StartTransform);
+	void PossessCharacter(ACPlayerCharacter* InNewCharacter);
+	void UnPossessCharacter();
 
 private:
 	void OnInputKey_R();
@@ -55,18 +63,31 @@ private:
 
 	void OnInputMouse_Wheel(float Axis);
 
+	void OnMouseX(float Axis);
+	void OnMouseY(float Axis);
+
+private:
+	void ChangePlayerCharacter(uint32 InIndex);
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Character")
 		int32 MaxPlayerCharacterCount;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Character")
-		TArray<TSubclassOf<APawn>> CharacterClasses;
+		TArray<TSubclassOf<ACPlayerCharacter>> CharacterClasses;
+
+protected:
+	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, Category = "Components")
+		UCameraComponent* CameraComp;
+
+	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, Category = "Components")
+		USpringArmComponent* SpringArmComp;
 
 
 private:
 	ACPlayerCharacter* PlayerCharacter;
-	TArray<APawn*> PlayerCharacters;
+
+	TArray<ACPlayerCharacter*> PlayerCharacters;
 
 	int32 PlayerCharacterCurrentIndex;
 

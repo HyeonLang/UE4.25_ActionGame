@@ -22,19 +22,16 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	
 public:
 	void OnMoveForward(float Axis);
 	void OnMoveRight(float Axis);
 
+	void OnTurn(float Axis);
+	void OnLookUp(float Axis);
+
 public:
-	FORCEINLINE const UCameraComponent* GetCameraComp() { return CameraComp; }
 
 protected:
-	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, Category = "Components")
-	UCameraComponent* CameraComp;
-
-	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, Category = "Components")
-	USpringArmComponent* SpringArmComp;
 
 };

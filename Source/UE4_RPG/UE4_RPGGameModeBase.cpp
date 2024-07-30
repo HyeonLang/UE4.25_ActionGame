@@ -22,27 +22,11 @@ void AUE4_RPGGameModeBase::SpawnAndPossessCharacters()
 	ACPlayerController* PlayerController = Cast<ACPlayerController>(GetWorld()->GetFirstPlayerController());
 	if (!PlayerController) return;
 
-	for (int32 i = 0; i < PlayerController->GetMaxPlayerCharacterCount(); i++)
-	{
-		if (PlayerController->GetCharacterClasses()[i])
-		{
-			TSubclassOf<APawn> CharacterClass = PlayerController->GetCharacterClasses()[i];
-			ACPlayerCharacter* PlayerCharacter = GetWorld()->SpawnActorDeferred<ACPlayerCharacter>(CharacterClass, StartSpawnTransform);
-			PlayerCharacter->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			PlayerCharacter->GetMesh()->SetVisibility(false);
-			PlayerCharacter->FinishSpawning(StartSpawnTransform);
-			PlayerController->AddControlledPlayerCharacter(PlayerCharacter);
-			CLog::Print("Spawned");
-		}
-	}
+	PlayerController->SpawnPlayerCharacter(StartSpawnTransform);
 
 
 	if (PlayerController->GetPlayerCharacters()[PlayerCharacterStartIndex])
 	{
-		PlayerController->Possess(PlayerController->GetPlayerCharacters()[PlayerCharacterStartIndex]);
-		Cast<ACPlayerCharacter>(PlayerController->GetPlayerCharacters()[PlayerCharacterStartIndex])->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		Cast<ACPlayerCharacter>(PlayerController->GetPlayerCharacters()[PlayerCharacterStartIndex])->GetMesh()->SetVisibility(true);
-		PlayerController->SetViewTarget(PlayerController->GetPlayerCharacters()[PlayerCharacterStartIndex]);
-		CLog::Print("Possess");
+		PlayerController->PossessCharacter(Cast<ACPlayerCharacter>(PlayerController->GetPlayerCharacters()[PlayerCharacterStartIndex]));
 	}
 }
