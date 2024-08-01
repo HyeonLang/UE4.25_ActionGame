@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -8,8 +6,7 @@
 
 class ACharacter;
 class ACPlayerCharacter;
-class UCameraComponent;
-class USpringArmComponent;
+class ACPlayerCameraActor;
 
 UCLASS()
 class UE4_RPG_API ACPlayerController : public APlayerController
@@ -20,14 +17,17 @@ public:
 	ACPlayerController();
 
 protected:
+	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
+
+public:
+	virtual void Tick(float DeltaSeconds) override;
 
 public:
 	FORCEINLINE int32 GetMaxPlayerCharacterCount() { return MaxPlayerCharacterCount; }
 	FORCEINLINE const TArray<TSubclassOf<ACPlayerCharacter>> GetCharacterClasses() { return CharacterClasses; }
 	FORCEINLINE TArray<ACPlayerCharacter*>& GetPlayerCharacters() { return PlayerCharacters; }
 	FORCEINLINE const int32 GetPlayerCharacterCurrentIndex() { return PlayerCharacterCurrentIndex; }
-	FORCEINLINE const UCameraComponent* GetCameraComp() { return CameraComp; }
 
 	void SetPlayerCharacterCurrentIndex(int32 InIndex);
 
@@ -71,21 +71,17 @@ private:
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Character")
-		int32 MaxPlayerCharacterCount;
+	int32 MaxPlayerCharacterCount;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Character")
-		TArray<TSubclassOf<ACPlayerCharacter>> CharacterClasses;
+	TArray<TSubclassOf<ACPlayerCharacter>> CharacterClasses;
 
-protected:
-	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, Category = "Components")
-		UCameraComponent* CameraComp;
-
-	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, Category = "Components")
-		USpringArmComponent* SpringArmComp;
-
+	UPROPERTY(EditDefaultsOnly, Category = "PlayerCameraActor")
+	TSubclassOf<ACPlayerCameraActor> PlayerCameraActorClass;
 
 private:
 	ACPlayerCharacter* PlayerCharacter;
+	ACPlayerCameraActor* PlayerCameraActor;
 
 	TArray<ACPlayerCharacter*> PlayerCharacters;
 
@@ -93,4 +89,5 @@ private:
 
 	FVector CurrentLocation;
 	FRotator CurrentRotation;
+	FRotator CameraRotation;
 };

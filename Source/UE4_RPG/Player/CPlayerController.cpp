@@ -3,60 +3,40 @@
 
 #include "CPlayerController.h"
 
-#include "Camera/CameraComponent.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "../Character/CPlayerCharacter.h"
+#include "CPlayerCameraActor.h"
 #include "../Global.h"
 
 
 
 ACPlayerController::ACPlayerController()
 {
-	CurrentLocation = FVector(0, 0, 88);
+	PrimaryActorTick.bCanEverTick = true;
+
+	CurrentLocation = FVector(0, 0, 88.f);
+	CameraRotation = GetControlRotation();
 	MaxPlayerCharacterCount = 3;
 
-	CHelpers::CreateSceneComponent(this, &SpringArmComp, "SpringArmComp", RootComponent);
-	CHelpers::CreateSceneComponent(this, &CameraComp, "CameraComp", SpringArmComp);
+	CHelpers::GetClass(&PlayerCameraActorClass, TEXT("/Game/Player/BP_CPlayerCameraActor"));
 
-	//-> SpringArmComp
-	SpringArmComp->SetRelativeLocation(FVector(0, 0, 140));
-	SpringArmComp->SetRelativeRotation(FRotator(0, 90, 0));
-	SpringArmComp->TargetArmLength = 200.0f;
-	SpringArmComp->bUsePawnControlRotation = true;
-	SpringArmComp->bEnableCameraLag = true;
 }
 
-//void ACPlayerController::OnPossess(APawn* InPawn)
-//{	
-//	PlayerCharacter = Cast<ACPlayerCharacter>(InPawn);
-//	if (PlayerCharacter)
-//	{
-//		PlayerCharacter->SetActorLocation(CurrentLocation);
-//		PlayerCharacter->SetActorRotation(CurrentRotation);
-//		PlayerCharacter->AddMovementInput(CurrentRotation.Vector(), CurrentWalkSpeed);
-//		PlayerCharacter->GetMesh()->SetVisibility(true);
-//		PlayerCharacter->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-//	}
-//	Super::OnPossess(InPawn);
-//	//SetViewTarget(PlayerCharacter);
-//}
 
-//void ACPlayerController::OnUnPossess()
-//{
-//
-//	if (PlayerCharacter)
-//	{
-//		CurrentLocation = PlayerCharacter->GetActorLocation();
-//		CurrentRotation = PlayerCharacter->GetActorRotation();
-//		CurrentWalkSpeed = PlayerCharacter->GetVelocity().Size2D();
-//		//PlayerCharacter->GetMesh()->SetVisibility(false);
-//		PlayerCharacter->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-//	}
-//
-//	Super::OnUnPossess();
-//}
+void ACPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+	if (PlayerCameraActorClass)
+	{
+		FTransform StartTransform;
+
+		PlayerCameraActor = GetWorld()->SpawnActorDeferred<ACPlayerCameraActor>(PlayerCameraActorClass, StartTransform);
+		PlayerCameraActor->FinishSpawning(StartTransform);
+
+		SetViewTarget(PlayerCameraActor);
+	}
+}	
 
 
 void ACPlayerController::SetupInputComponent()
@@ -71,6 +51,18 @@ void ACPlayerController::SetupInputComponent()
 
 	InputComponent->BindAxis("Mouse_X", this, &ACPlayerController::OnMouseX);
 	InputComponent->BindAxis("Mouse_Y", this, &ACPlayerController::OnMouseY);
+}
+
+void ACPlayerController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	FVector Location = PlayerCharacter->GetActorLocation();
+	Location.Z += 88.f;
+	PlayerCameraActor->SetActorLocation(Location);
+
+	CLog::Print(GetControlRotation(), -1, GetWorld()->GetDeltaSeconds(), FColor::Red);
+	CLog::Print(PlayerCameraActor->GetActorRotation(), -1, DeltaSeconds);
 }
 
 void ACPlayerController::SetPlayerCharacterCurrentIndex(int32 InIndex)
@@ -106,11 +98,20 @@ void ACPlayerController::SpawnPlayerCharacter(FTransform StartTransform)
 
 void ACPlayerController::PossessCharacter(ACPlayerCharacter* InNewCharacter)
 {
+	FRotator Rotation;
+	Rotation = GetControlRotation();
+
 	Possess(InNewCharacter);
+
 	InNewCharacter->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	InNewCharacter->GetMesh()->SetVisibility(true);
-	//SetViewTarget(this);
 	PlayerCharacter = InNewCharacter;
+	if (PlayerCameraActor)
+	{
+		PlayerCameraActor->SetActorRotation(Rotation);
+		ControlRotation = Rotation;
+	}
+	SetViewTarget(PlayerCameraActor);
 }
 
 void ACPlayerController::UnPossessCharacter()
@@ -223,11 +224,14 @@ void ACPlayerController::OnInputMouse_Wheel(float Axis)
 void ACPlayerController::OnMouseX(float Axis)
 {
 	PlayerCharacter->OnTurn(Axis);
+	PlayerCameraActor->SetActorRotation(GetControlRotation());
 }
 
 void ACPlayerController::OnMouseY(float Axis)
 {
 	PlayerCharacter->OnLookUp(Axis);
+	PlayerCameraActor->SetActorRotation(GetControlRotation());
+
 }
 
 void ACPlayerController::ChangePlayerCharacter(uint32 InIndex)
