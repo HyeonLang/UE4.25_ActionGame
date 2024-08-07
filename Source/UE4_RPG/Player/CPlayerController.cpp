@@ -7,13 +7,18 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "../Character/CPlayerCharacter.h"
 #include "CPlayerCameraActor.h"
+#include "../Component/CPlayerAttributeComponent.h"
 #include "../Global.h"
 
 
 
 ACPlayerController::ACPlayerController()
 {
+	//Enable Tick
 	PrimaryActorTick.bCanEverTick = true;
+
+	//Create Actor Component
+	CHelpers::CreateActorComponent(this, &PlayerAttributeComp, "PlayerAttributeComp");
 
 	CurrentLocation = FVector(0, 0, 88.f);
 	CameraRotation = GetControlRotation();

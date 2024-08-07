@@ -7,6 +7,7 @@
 class ACharacter;
 class ACPlayerCharacter;
 class ACPlayerCameraActor;
+class UCPlayerAttributeComponent;
 
 UCLASS()
 class UE4_RPG_API ACPlayerController : public APlayerController
@@ -78,6 +79,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "PlayerCameraActor")
 	TSubclassOf<ACPlayerCameraActor> PlayerCameraActorClass;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = "Component")
+	UCPlayerAttributeComponent* PlayerAttributeComp;
 
 private:
 	ACPlayerCharacter* PlayerCharacter;
